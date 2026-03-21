@@ -45,7 +45,7 @@ Azure Data Factory was utilized to abstract the underlying infrastructure needed
 * **Sink Dataset:** Mapped the incoming JSON payload to land directly in the `01-bronze/flights` directory.
 
 <p align="center">
-  <img src="ingestion/images/ADF_pipeline.png" width="800" title="Azure Data Factory Pipeline">
+  <img src="images/ADF_pipeline.png" width="800" title="Azure Data Factory Pipeline">
 </p>
 
 #### 3. Automation and Execution
