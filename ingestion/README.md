@@ -44,7 +44,9 @@ Azure Data Factory was utilized to abstract the underlying infrastructure needed
 * **Source Dataset:** Configured a REST linked service connecting directly to the OpenSky state vector API.
 * **Sink Dataset:** Mapped the incoming JSON payload to land directly in the `01-bronze/flights` directory.
 
-![ADF Ingestion Pipeline Canvas](ingestion/images/ADF_pipeline.png)
+<p align="center">
+  <img src="ingestion/images/ADF_pipeline.png" width="800" title="Azure Data Factory Pipeline">
+</p>
 
 #### 3. Automation and Execution
 To ensure continuous data delivery and zero manual overhead, the pipeline was transitioned from the development environment to production. A schedule trigger (`dailyTrigger`) was implemented and published, configured to execute the batch sync daily at 09:00 AM (UTC+10:00). 
