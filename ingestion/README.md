@@ -55,11 +55,17 @@ Azure Data Factory was utilized to abstract the underlying infrastructure needed
 #### 3. Automation and Execution
 To ensure continuous data delivery and zero manual overhead, the pipeline was transitioned from the development environment to production. A schedule trigger (`dailyTrigger`) was implemented and published, configured to execute the batch sync daily at 09:00 AM (UTC+10:00). 
 
-> *[SCREENSHOT CUE 3: Insert an image of the Trigger configuration pane showing the daily recurrence and the time zone setting.]*
+<p align="center">
+  <img src="images/Trigger_configuration.png" width="600" alt="ADF Daily Schedule Trigger">
+  <br><i>Figure 3: Daily recurrence trigger configured for 09:00 AM AEST</i>
+</p>
 
 The pipeline successfully executes the REST GET request and lands the uncompressed `raw_flight_data.json` file securely into the Bronze layer.
 
-> *[SCREENSHOT CUE 4: Insert an image of the ADF 'Output' tab showing the green checkmark and 'Succeeded' status for the pipeline run.]*
+<p align="center">
+  <img src="images/ADF_JSON_output.png" width="800" alt="Raw OpenSky JSON Data in Bronze">
+  <br><i>Figure 4: Validated raw JSON payload landed in the Bronze layer</i>
+</p>
 
 ---
 
