@@ -37,7 +37,7 @@ An Azure Data Lake Storage Gen2 account (`stportfoliodatalake001`) was provision
 * `02-silver`: For cleansed, deduplicated, and flattened tabular data.
 * `03-gold`: For aggregated, business-ready models optimized for BI tools.
 
-> *[SCREENSHOT CUE 1: Insert an image of your Azure Storage Browser showing the `01-bronze`, `02-silver`, and `03-gold` folders inside the `datalake` container.]*
+![Azure Data Lake Medallion Structure](ingestion/images/ADF_pipeline.png)
 
 #### 2. The Orchestration Engine (Ingestion Layer)
 Azure Data Factory was utilized to abstract the underlying infrastructure needed for the extraction process. A pipeline named `pl_ingest_opensky_flights` was engineered to handle the data movement. 
