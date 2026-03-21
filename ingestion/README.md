@@ -38,7 +38,7 @@ An Azure Data Lake Storage Gen2 account (`stportfoliodatalake001`) was provision
 * `03-gold`: For aggregated, business-ready models optimized for BI tools.
 
 <p align="center">
-  <img src="images/Azure_Storage_Browser.jpg" width="800" alt="Azure Data Lake Medallion Structure">
+  <img src="images/Azure_Storage_Browser.png" width="800" alt="Azure Data Lake Medallion Structure">
   <br><i>Figure 1: ADLS Gen2 Medallion Architecture (Bronze, Silver, Gold layers)</i>
 </p>
 
@@ -63,7 +63,7 @@ To ensure continuous data delivery and zero manual overhead, the pipeline was tr
 The pipeline successfully executes the REST GET request and lands the uncompressed `raw_flight_data.json` file securely into the Bronze layer.
 
 <p align="center">
-  <img src="images/ADF_JSON_output.png" width="800" alt="Raw OpenSky JSON Data in Bronze">
+  <img src="images/ADF_JSON_output.jpg" width="800" alt="Raw OpenSky JSON Data in Bronze">
   <br><i>Figure 4: Validated raw JSON payload landed in the Bronze layer</i>
 </p>
 
