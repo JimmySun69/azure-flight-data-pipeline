@@ -37,7 +37,10 @@ An Azure Data Lake Storage Gen2 account (`stportfoliodatalake001`) was provision
 * `02-silver`: For cleansed, deduplicated, and flattened tabular data.
 * `03-gold`: For aggregated, business-ready models optimized for BI tools.
 
-![Azure Data Lake Medallion Structure](ingestion/images/ADF_pipeline.png)
+<p align="center">
+  <img src="images/Azure_Storage_Browser.jpg" width="800" alt="Azure Data Lake Medallion Structure">
+  <br><i>Figure 1: ADLS Gen2 Medallion Architecture (Bronze, Silver, Gold layers)</i>
+</p>
 
 #### 2. The Orchestration Engine (Ingestion Layer)
 Azure Data Factory was utilized to abstract the underlying infrastructure needed for the extraction process. A pipeline named `pl_ingest_opensky_flights` was engineered to handle the data movement. 
@@ -45,7 +48,8 @@ Azure Data Factory was utilized to abstract the underlying infrastructure needed
 * **Sink Dataset:** Mapped the incoming JSON payload to land directly in the `01-bronze/flights` directory.
 
 <p align="center">
-  <img src="images/ADF_pipeline.png" width="800" title="Azure Data Factory Pipeline">
+  <img src="images/ADF_pipeline.png" width="800" alt="Azure Data Factory Ingestion Pipeline">
+  <br><i>Figure 2: REST API Ingestion Pipeline in Azure Data Factory</i>
 </p>
 
 #### 3. Automation and Execution
