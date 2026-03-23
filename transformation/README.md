@@ -2,42 +2,77 @@
 
 Once the raw OpenSky JSON is landed in the `bronze` staging table, a custom T-SQL Stored Procedure (`silver.sp_ProcessFlightData`) is triggered by Azure Data Factory to transform the data into a structured, queryable format.
 
-*(📸 SCREENSHOT 1: Take a screenshot of your ADF pipeline canvas showing the three chained activities with the green checkmarks in the Output tab. This proves your orchestration works.)*
-![ADF Pipeline Orchestration Success](images/adf_pipeline_success.png)
+<p align="center">
+  <img src="images/adf_pipeline_success.png" width="600" alt="ADF Pipeline Success">
+</p>
 
-### 📥 1. The Raw Landing (Bronze Layer)
-Before transformation, the API payload is preserved in its raw format using a Schema-on-Read approach. We map the entire JSON response root (`$`) directly into a single `NVARCHAR(MAX)` column.
+### 🧠 1. Transformation Logic & Schema Mapping
+The transformation process handles the "shredding" of nested JSON arrays into a relational format. By using a root-level mapping (`$`) in Data Factory, we ensure the entire API payload is preserved before SQL processing.
 
-*(📸 SCREENSHOT 2: Take a screenshot of the "Mapping" tab in your ADF 'Copy to SQL Staging' activity, showing the `$` mapped to `RawJsonData` with the 'Map complex values to string' box checked. This highlights your troubleshooting and mapping skills.)*
-![ADF JSON Root Mapping](images/adf_json_mapping.png)
+<p align="center">
+  <img src="images/adf_json_mapping.png" width="600" alt="ADF JSON Mapping">
+</p>
 
-*(📸 SCREENSHOT 3: Take a screenshot of your Azure SQL Query Editor running `SELECT * FROM bronze.Staging_OpenSky;` showing the long string of raw JSON in the column. This shows the "Before" state of your data.)*
-![Raw JSON in Staging Table](images/sql_bronze_raw_json.png)
+### 🌍 2. Spatial Data Engineering
+To enable advanced GIS analysis, this project implements native SQL spatial objects. A critical challenge was handling "dirty data" from the live API (missing coordinates). I implemented a **Logic Gate** using a `CASE` statement to validate telemetry before creating geography points.
 
-### 🧠 2. Transformation Logic & Spatial Engineering
-The transformation process was engineered to handle three specific technical challenges:
+**Key Technical Features:**
+* **Geography Constructor:** Converts coordinates into native `GEOGRAPHY` objects (SRID 4326).
+* **Data Resiliency:** Uses `TRY_CAST` to prevent pipeline crashes from null telemetry.
+* **Staging Management:** Implements `TRUNCATE` to maintain a high-performance "Transient" Bronze layer.
 
-1. **JSON Flattening:** Utilized `OPENJSON` with explicit path expressions to "shred" the complex nested array-of-arrays format typical of the OpenSky REST API.
-2. **Schema & Type Enforcement:** Implemented `TRY_CAST` and `TRIM` functions to ensure telemetry data is stored as numeric types, preventing pipeline failures from unexpected "null" strings.
-3. **Temporal Normalization:** Converted the API's Unix Epoch timestamps into standard SQL `DATETIME` formats.
-
-To enable advanced GIS analysis, this project implements native spatial objects:
-* **Geography Constructor:** Converts raw Latitude and Longitude into a native `GEOGRAPHY` point object using the **SRID 4326** (WGS 84) standard.
-* **Resiliency Logic:** Developed a `CASE` statement to validate coordinates (Lat: -90 to 90, Long: -180 to 180) before processing. This prevents "Parameter Null" errors common in live telemetry streams when an aircraft loses GPS lock.
-
-*(📸 SCREENSHOT 4: Take a screenshot of your Azure SQL Query Editor showing the T-SQL Stored Procedure code, specifically highlighting the `TRY...CATCH` block and the `geography::Point` logic. This proves you write clean, robust SQL.)*
-![T-SQL Stored Procedure Logic](images/sql_stored_procedure.png)
-
-### 📊 3. Verification Query (Silver Layer)
-To confirm the success of the transformation, the following query is executed to view the flattened data alongside the generated WKT (Well-Known Text) spatial coordinates:
-
+#### 🛠️ Stored Procedure Logic
 ```sql
-SELECT TOP 20 
-    Callsign, 
-    OriginCountry, 
-    Latitude,
-    Longitude,
-    SpatialLocation.STAsText() AS CoordinatePoint, 
-    ProcessedTimestamp
-FROM silver.FlightTracking
-ORDER BY ProcessedTimestamp DESC;
+CREATE PROCEDURE silver.sp_ProcessFlightData
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @json NVARCHAR(MAX);
+    SELECT TOP 1 @json = RawJsonData FROM bronze.Staging_OpenSky ORDER BY IngestionTimestamp DESC;
+
+    IF @json IS NOT NULL
+    BEGIN
+        INSERT INTO silver.FlightTracking (
+            Icao24, Callsign, OriginCountry, Longitude, Latitude, 
+            Altitude, Velocity, TrueTrack, SpatialLocation, LastContactTimestamp
+        )
+        SELECT 
+            JSON_VALUE(Value, '$[0]'), 
+            TRIM(JSON_VALUE(Value, '$[1]')), 
+            JSON_VALUE(Value, '$[2]'), 
+            TRY_CAST(JSON_VALUE(Value, '$[5]') AS FLOAT), 
+            TRY_CAST(JSON_VALUE(Value, '$[6]') AS FLOAT), 
+            TRY_CAST(JSON_VALUE(Value, '$[7]') AS FLOAT), 
+            TRY_CAST(JSON_VALUE(Value, '$[9]') AS FLOAT), 
+            TRY_CAST(JSON_VALUE(Value, '$[10]') AS FLOAT),
+            
+            -- SPATIAL LOGIC: Validates coordinates before Point creation
+            CASE 
+                WHEN JSON_VALUE(Value, '$[6]') IS NOT NULL 
+                 AND JSON_VALUE(Value, '$[5]') IS NOT NULL 
+                THEN geography::Point(
+                        CAST(JSON_VALUE(Value, '$[6]') AS FLOAT), 
+                        CAST(JSON_VALUE(Value, '$[5]') AS FLOAT), 
+                        4326)
+                ELSE NULL 
+            END,
+
+            DATEADD(second, TRY_CAST(JSON_VALUE(Value, '$[4]') AS INT), '1970-01-01')
+        FROM OPENJSON(@json, '$.states');
+
+        TRUNCATE TABLE bronze.Staging_OpenSky;
+    END
+END;
+```
+
+<p align="center">
+  <img src="images/sql_stored_procedure.png" width="600" alt="T-SQL Logic">
+</p>
+
+### 📊 3. Verification & Results (Silver Layer)
+The final output produces a cleaned, structured dataset ready for BI reporting or spatial indexing.
+
+<p align="center">
+  <img src="images/sql_silver_results.png" width="600" alt="Silver Layer Results">
+</p>
