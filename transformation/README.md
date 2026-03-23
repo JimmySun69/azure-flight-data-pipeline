@@ -3,14 +3,14 @@
 Once the raw OpenSky JSON is landed in the `bronze` staging table, a custom T-SQL Stored Procedure (`silver.sp_ProcessFlightData`) is triggered by Azure Data Factory to transform the data into a structured, queryable format.
 
 <p align="center">
-  <img src="images/adf_pipeline_success.png" width="600" alt="ADF Pipeline Success">
+  <img src="images/Azure_pipeline.png" width="600" alt="ADF Pipeline">
 </p>
 
 ### 🧠 1. Transformation Logic & Schema Mapping
 The transformation process handles the "shredding" of nested JSON arrays into a relational format. By using a root-level mapping (`$`) in Data Factory, we ensure the entire API payload is preserved before SQL processing.
 
 <p align="center">
-  <img src="images/adf_json_mapping.png" width="600" alt="ADF JSON Mapping">
+  <img src="images/ADF_JSON_Mapping.png" width="600" alt="ADF JSON Mapping">
 </p>
 
 ### 🌍 2. Spatial Data Engineering
@@ -66,13 +66,10 @@ BEGIN
 END;
 ```
 
-<p align="center">
-  <img src="images/sql_stored_procedure.png" width="600" alt="T-SQL Logic">
-</p>
 
 ### 📊 3. Verification & Results (Silver Layer)
 The final output produces a cleaned, structured dataset ready for BI reporting or spatial indexing.
 
 <p align="center">
-  <img src="images/sql_silver_results.png" width="600" alt="Silver Layer Results">
+  <img src="images/Query.png" width="600" alt="Silver Layer Results">
 </p>
